@@ -97,7 +97,7 @@ export default {
     const that = this;
 
     axios
-      .get(`http://localhost:8000/api/accounts/${this.$route.params.id}`)
+      .get(`${process.env.apiURL}/accounts/${this.$route.params.id}`)
       .then(function(response) {
         if (!response.data.length) {
           window.location = "/";
@@ -112,7 +112,7 @@ export default {
 
     axios
       .get(
-        `http://localhost:8000/api/accounts/${
+        `${process.env.apiURL}/accounts/${
           that.$route.params.id
         }/transactions`
       )
@@ -147,7 +147,7 @@ export default {
       evt.preventDefault();
 
       axios.post(
-        `http://localhost:8000/api/accounts/${
+        `${process.env.apiURL}/accounts/${
           this.$route.params.id
         }/transactions`,
 
@@ -160,7 +160,7 @@ export default {
       // update items
       setTimeout(() => {
         axios
-          .get(`http://localhost:8000/api/accounts/${this.$route.params.id}`)
+          .get(`${process.env.apiURL}/accounts/${this.$route.params.id}`)
           .then(function(response) {
             if (!response.data.length) {
               window.location = "/";
@@ -171,7 +171,7 @@ export default {
 
         axios
           .get(
-            `http://localhost:8000/api/accounts/${
+            `${process.env.apiURL}/accounts/${
               that.$route.params.id
             }/transactions`
           )
