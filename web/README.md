@@ -1,7 +1,3 @@
-# ybank
-
-> ybank - frontend
-
 ## Build Setup
 
 ```bash
