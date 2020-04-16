@@ -78,4 +78,73 @@ class AccountTest extends TestCase
         $response = $this->json('POST', "api/accounts/$from/transactions", $postData);
         $response->assertStatus(201);
     }
+
+    /**@test */
+    public function testMakeTransactionFromInvalidUser()
+    {
+        $notUsedId = \DB::table('accounts')->latest('id')->first();
+
+        $from = ++$notUsedId->id;
+        $postData = [
+            'to'=>'2',
+            'amount'=>'12',
+            'details'=>'Test Payment on Testing DB Not Found User'
+        ];
+
+        $response = $this->json('POST', "api/accounts/$from/transactions", $postData);
+        $response->assertStatus(422);
+    }
+
+    /**@test */
+    public function testMakeTransactionInsufficientFunds()
+    {
+        $from = $id = 1;
+        
+        $getBalance = \DB::table('accounts')
+                    ->select('balance')
+                    ->whereRaw("id=$id")
+                    ->get('balance');
+
+        $availableBalance = $getBalance->all()[0]->balance;
+
+        
+        $postData = [
+            'to'=>'2',
+            'amount'=>++$availableBalance,
+            'details'=>'Test Payment on Testing DB Insufficient Funds'
+        ];
+
+        $response = $this->json('POST', "api/accounts/$from/transactions", $postData);
+        $response->assertStatus(405);
+    }
+
+    /**@test */
+    public function testMakeTransactionSameFromAndToAccount()
+    {
+        
+        $getAnAccountWithAvailableBalance = \DB::table('accounts')
+                                        ->select(['id','balance'])
+                                        ->whereRaw("balance>1")
+                                        ->first();
+
+        if(is_null($getAnAccountWithAvailableBalance)){
+            \Artisan::call('migrate:fresh --seed');
+            $getAnAccountWithAvailableBalance = \DB::table('accounts')
+                                            ->select(['id','balance'])
+                                            ->whereRaw("balance>100000000")
+                                            ->first();
+        }
+
+        $availableBalance = $getAnAccountWithAvailableBalance->balance;
+        $idWithBalance = $getAnAccountWithAvailableBalance->id;
+
+        $postData = [
+            'to'=>$idWithBalance,
+            'amount'=>$availableBalance,
+            'details'=>'Test Payment on Testing DB Not Found User'
+        ];
+
+        $response = $this->json('POST', "api/accounts/$idWithBalance/transactions", $postData);
+        $response->assertStatus(422);
+    }
 }
