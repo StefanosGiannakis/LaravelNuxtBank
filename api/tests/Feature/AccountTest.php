@@ -14,9 +14,28 @@ class AccountTest extends TestCase
      *
      * @return void
      */
-    public function testExample()
+    public function testTranscactions()
     {
         $response = $this->json('GET', '/api/accounts/1/transactions');
         $response->assertStatus(200);
+    }
+
+    /**@test */
+    public function testTransactionWithInvalidParameter()
+    {
+        $response = $this->json('GET', '/api/accounts/invalid/transactions');
+        $response->assertStatus(422);
+    }
+
+    /**@test */
+    public function testTransactionNotFoundId()
+    {
+        $notUsedId = \DB::table('accounts')->latest('id')
+        ->first();
+
+        ++$notUsedId->id;
+
+        $response = $this->json('GET', "/api/accounts/$notUsedId->id/transactions");
+        $response->assertStatus(404);
     }
 }
