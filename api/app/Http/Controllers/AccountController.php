@@ -53,6 +53,56 @@ class AccountController extends Controller
 
     public function createTransaction(Request $request, $id)
     {
+        $validator =  Validator::make($request->all(),[
+            'to' => 'required|numeric|exists:accounts,id',
+            'amount' => 'required|numeric|min:0.1',
+            'details' => 'required|min:5'
+        ]);
+             
+        if($validator->fails())
+            return response()->json($validator->errors(), 422);
 
+        $validUserIDs = Account::where('id' ,'>' ,0)->pluck('id');
+            
+        // Check if `from` id is valid and is not same as `to`
+        if(!in_array($id,$validUserIDs->all()) || $id==$validator->validated()['to'])
+            return response()->json(['error' => 'Not a valid Id '], 422);
+        
+        $validData['from'] = $id;
+        $validData += $validator->validated();
+
+        $to = $validData['to'];
+        $amount = $validData['amount'];
+        $details = $validData['details'];
+
+        $getBalance = \DB::table('accounts')
+                        ->select('balance')
+                        ->whereRaw("id=$id")
+                        ->get('balance');
+
+        $availableBalance = $getBalance->all()[0]->balance;
+        if($availableBalance < $amount)
+            return response()->json(['error' => 'Not available amount'], 405);
+
+
+        $account = \DB::table('accounts')
+                    ->whereRaw("id=$id")
+                    ->update(['balance' => \DB::raw('balance-' . $amount)]);
+
+        $account = \DB::table('accounts')
+                    ->whereRaw("id=$to")
+                    ->update(['balance' => \DB::raw('balance+' . $amount)]);
+
+        $result = \DB::table('transactions')->insert(
+            [
+                'from' => $id,
+                'to' => $to,
+                'amount' => $amount,
+                'details' => $details
+            ]
+        );
+
+        if($result)
+            return response()->json($validData, 201);
     }
 }
