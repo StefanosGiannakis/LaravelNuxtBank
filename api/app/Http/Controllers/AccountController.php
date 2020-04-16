@@ -45,6 +45,16 @@ class AccountController extends Controller
                     ->whereRaw("id=$id")
                     ->get();
 
+        $currency_id = $account->all()[0]->currency_id;
+        
+
+        $currency = \DB::table('currencies')
+                        ->select('code')
+                        ->whereRaw("id=$currency_id")
+                        ->get();
+
+        $account[0]->currency = $currency[0]->code;
+        
         if(!count($account))
             return response()->json(['error'=>'Account Not Found'], 404);
 
