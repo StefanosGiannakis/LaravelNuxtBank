@@ -64,4 +64,18 @@ class AccountTest extends TestCase
         $response = $this->json('GET', "/api/accounts/$notUsedId->id");
         $response->assertStatus(404);
     }
+
+    /**@test */
+    public function testMakeTransaction()
+    {
+        $from = 1;
+        $postData = [
+            'to'=>'2',
+            'amount'=>'12',
+            'details'=>'Test Payment on Testing DB'
+        ];
+
+        $response = $this->json('POST', "api/accounts/$from/transactions", $postData);
+        $response->assertStatus(201);
+    }
 }
