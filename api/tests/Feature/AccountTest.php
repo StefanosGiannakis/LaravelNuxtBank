@@ -38,4 +38,30 @@ class AccountTest extends TestCase
         $response = $this->json('GET', "/api/accounts/$notUsedId->id/transactions");
         $response->assertStatus(404);
     }
+
+    /**@test */
+    public function testAccountWithCorrectParameter()
+    {
+        $response = $this->json('GET', '/api/accounts/1');
+        $response->assertStatus(200);
+    }
+
+    /**@test */
+    public function testAccountWithInvalidParameter()
+    {
+        $response = $this->json('GET', '/api/accounts/invalid');
+        $response->assertStatus(422);
+    }
+
+    /**@test */
+    public function testAccountNotFoundId()
+    {
+        $notUsedId = \DB::table('accounts')->latest('id')
+        ->first();
+
+        ++$notUsedId->id;
+
+        $response = $this->json('GET', "/api/accounts/$notUsedId->id");
+        $response->assertStatus(404);
+    }
 }
