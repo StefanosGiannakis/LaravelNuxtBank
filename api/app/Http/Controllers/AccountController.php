@@ -31,6 +31,22 @@ class AccountController extends Controller
 
     public function account($id)
     {
+        $validator =  Validator::make(['id'=>$id],[
+            'id' => 'numeric'
+        ]);
+        
+        if($validator->fails())
+           return response()->json(['error'=>'Unprocessable Entity'], 422);
 
+        
+        $id = $validator->validated()['id'];
+        $account = \DB::table('accounts')
+             ->whereRaw("id=$id")
+             ->get();
+
+        if(!count($account))
+            return response()->json(['error'=>'Account Not Found'], 404);
+
+        return response()->json($account, 200);
     }
 }
