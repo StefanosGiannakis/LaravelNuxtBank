@@ -20,9 +20,5 @@ Route::get('accounts/{id}/transactions', 'AccountController@transactions')->name
 
 Route::post('accounts/{id}/transactions', 'AccountController@createTransaction')->name('createTransaction');
 
-Route::get('currencies', function () {
-    $account = DB::table('currencies')
-              ->get();
+Route::get('currencies', 'CurrencyController@getCurrencyList')->name('getCurrencyList');
 
-    return $account;
-});
