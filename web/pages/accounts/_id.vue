@@ -11,7 +11,7 @@
           <div>
             Balance:
             <code
-              >{{ account.currency === "usd" ? "$" : "€"
+              >{{ account.currency === "USD" ? "$" : "€"
               }}{{ account.balance }}</code
             >
           </div>
@@ -108,36 +108,7 @@ export default {
             that.loading = false;
           }
         }
-      });
-
-    axios
-      .get(
-        `${process.env.apiURL}/accounts/${
-          that.$route.params.id
-        }/transactions`
-      )
-      .then(function(response) {
-        that["transactions"] = response.data;
-
-        var transactions = [];
-        for (let i = 0; i < that.transactions.length; i++) {
-          that.transactions[i].amount =
-            (that.account.currency === "usd" ? "$" : "€") +
-            that.transactions[i].amount;
-
-          if (that.account.id != that.transactions[i].to) {
-            that.transactions[i].amount = "-" + that.transactions[i].amount;
-          }
-
-          transactions.push(that.transactions[i]);
-        }
-
-        that.transactions = transactions;
-
-        if (that.account && that.transactions) {
-          that.loading = false;
-        }
-      });
+      }).then(that.getTransactions(that));
   },
 
   methods: {
@@ -181,7 +152,7 @@ export default {
             var transactions = [];
             for (let i = 0; i < that.transactions.length; i++) {
               that.transactions[i].amount =
-                (that.account.currency === "usd" ? "$" : "€") +
+                (that.account.currency === "USD" ? "$" : "€") +
                 that.transactions[i].amount;
 
               if (that.account.id != that.transactions[i].to) {
@@ -194,7 +165,39 @@ export default {
             that.transactions = transactions;
           });
       }, 200);
+    },
+    getTransactions(that) {
+          axios
+      .get(
+        `${process.env.apiURL}/accounts/${
+          that.$route.params.id
+        }/transactions`
+      )
+      .then(function(response) {
+        that["transactions"] = response.data;
+
+        var transactions = [];
+        for (let i = 0; i < that.transactions.length; i++) {
+          // alert((that.account.currency === "USD" ? "$" : "€") + that.transactions[i].amount)
+          that.transactions[i].amount =
+            (that.account.currency === "USD" ? "$" : "€") +
+            that.transactions[i].amount;
+
+          if (that.account.id != that.transactions[i].to) {
+            that.transactions[i].amount = "-" + that.transactions[i].amount;
+          }
+
+          transactions.push(that.transactions[i]);
+        }
+
+        that.transactions = transactions;
+
+        if (that.account && that.transactions) {
+          that.loading = false;
+        }
+      });
     }
+
   }
 };
 </script>
