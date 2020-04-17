@@ -44,7 +44,10 @@ class AccountController extends Controller
         $account = \DB::table('accounts')
                     ->whereRaw("id=$id")
                     ->get();
-
+                    
+        if(!count($account))
+            return response()->json(['error'=>'Account Not Found'], 404);
+        
         $currency_id = $account->all()[0]->currency_id;
         
 
@@ -53,10 +56,9 @@ class AccountController extends Controller
                         ->whereRaw("id=$currency_id")
                         ->get();
 
+
         $account[0]->currency = $currency[0]->code;
         
-        if(!count($account))
-            return response()->json(['error'=>'Account Not Found'], 404);
 
         return response()->json($account, 200);
     }
