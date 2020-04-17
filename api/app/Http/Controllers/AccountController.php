@@ -99,6 +99,11 @@ class AccountController extends Controller
                     ->whereRaw("id=$id")
                     ->update(['balance' => \DB::raw('balance-' . $amount)]);
 
+
+        // Here i must translate sender currency to reciever's
+        $currencyTranslator = new CurrencyController();
+        $amount = $currencyTranslator->translateSenderCurrencyToReciever($validData);
+
         $account = \DB::table('accounts')
                     ->whereRaw("id=$to")
                     ->update(['balance' => \DB::raw('balance+' . $amount)]);
