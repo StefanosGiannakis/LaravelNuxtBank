@@ -8,6 +8,14 @@ use Illuminate\Http\Request;
 
 class CurrencyController extends Controller
 {
+    private $currencies;
+    
+    public function __construct()
+    {
+        $this->currencies = $this->getCurrencyList();
+        $this->currencies = json_decode(json_encode($this->currencies->values()), true);
+    }
+
     public function getCurrencyList()
     {
         $currencies = new Currency();
@@ -27,26 +35,25 @@ class CurrencyController extends Controller
         if($recieverAccount['currency_id'] == $senderAccount['currency_id'])
             return $validData['amount'];
  
-        // convert and return the translated amount
-        $currencies = $this->getCurrencyList();
-        $currencies = json_decode(json_encode($currencies->values()), true);
-   
-        $senderCurrencyUSDrate = $this->getExchangeRate($currencies,$senderAccount['currency_id']);
-        $recieverCurrencyUSDrate = $this->getExchangeRate($currencies,$recieverAccount['currency_id']);
+        $senderCurrencyUSDrate = $this->getCurrencyInfo($senderAccount['currency_id']);
+        $recieverCurrencyUSDrate = $this->getCurrencyInfo($recieverAccount['currency_id']);
         
-        $sendersAmountToUSD = $validData['amount'] * $senderCurrencyUSDrate;
+        $sendersAmountToUSD = $validData['amount'] * $senderCurrencyUSDrate['usd_exchange_rate'];
 
-        $amountConvertedToRecieverCurrency = $sendersAmountToUSD / $recieverCurrencyUSDrate;
+        $amountConvertedToRecieverCurrency = $sendersAmountToUSD / $recieverCurrencyUSDrate['usd_exchange_rate'];
 
         return $amountConvertedToRecieverCurrency;
     }
 
-    private function getExchangeRate($currencies,$currency_id)
+    public function getCurrencyInfo($currency_id)
     {
-        foreach($currencies as $currency)
+        foreach($this->currencies as $currency)
         {
             if($currency['id']==$currency_id)
-                return $currency['usd_exchange_rate'];
+                return [
+                    'usd_exchange_rate' => $currency['usd_exchange_rate'],
+                    'symbol' => $currency['symbol'],
+                ];
         }
     }
 
@@ -62,16 +69,13 @@ class CurrencyController extends Controller
         // if currencies code are same return 
         if($recieverAccount['currency_id'] == $senderAccount['currency_id'])
             return $transaction['amount'];
- 
-        // convert and return the translated amount
-        $currencies = $this->getCurrencyList();
-        $currencies = json_decode(json_encode($currencies->values()), true);
    
-        $senderCurrencyUSDrate = $this->getExchangeRate($currencies,$senderAccount['currency_id']);
-        $recieverCurrencyUSDrate = $this->getExchangeRate($currencies,$recieverAccount['currency_id']);
+        $senderCurrencyUSDrate = $this->getCurrencyInfo($senderAccount['currency_id'])['usd_exchange_rate'];
+        $recieverCurrencyUSDrate = $this->getCurrencyInfo($recieverAccount['currency_id'])['usd_exchange_rate'];
         
         $recieverAmountToUSD = $transaction['amount'] * $recieverCurrencyUSDrate;
 
-        $transaction['amount'] = round($recieverAmountToUSD / $senderCurrencyUSDrate, 2);
+        $currency = $this->getCurrencyInfo($senderAccount['currency_id'])['symbol'];
+        $transaction['amount'] = round($recieverAmountToUSD / $senderCurrencyUSDrate, 2) ." $currency";
     }
 }

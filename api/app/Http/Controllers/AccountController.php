@@ -30,12 +30,17 @@ class AccountController extends Controller
         $transactions = json_decode(json_encode($transactions->values()), true);
         
         // Convert Transactions Amounts to 'caller account' currency id
-        $currencyConverter = new CurrencyController();
+        $currency = new CurrencyController();
+        
+        $currency_id = $this->account($id)->getData()[0]->currency_id;
+        $symbol = $currency->getCurrencyInfo($currency_id)['symbol'];
 
         foreach($transactions as &$transaction){
             if($transaction['from'] == $id){
-                $currencyConverter->translateCurrencyToSender($transaction);
+                $currency->translateCurrencyToSender($transaction);
+                continue;
             }
+            $transaction['amount'] .= " $symbol";
         } 
 
         return response()->json($transactions, 200);
