@@ -11,7 +11,7 @@
           <div>
             Balance:
             <code
-              >{{ account.currency === "USD" ? "$" : "€"
+              >{{ currency_symbol
               }}{{ account.balance }}</code
             >
           </div>
@@ -89,7 +89,8 @@ export default {
       account: null,
       transactions: null,
 
-      loading: true
+      loading: true,
+      currency_symbol: 'd'
     };
   },
 
@@ -108,7 +109,10 @@ export default {
             that.loading = false;
           }
         }
-      }).then(that.getTransactions(that));
+      }).then(that.getTransactions(that))
+      .then(function (){
+        that.getCurrencySymbol(that.account)
+      });
   },
 
   methods: {
@@ -178,9 +182,8 @@ export default {
 
         var transactions = [];
         for (let i = 0; i < that.transactions.length; i++) {
-          // alert((that.account.currency === "USD" ? "$" : "€") + that.transactions[i].amount)
           that.transactions[i].amount =
-            (that.account.currency === "USD" ? "$" : "€") +
+            
             that.transactions[i].amount;
 
           if (that.account.id != that.transactions[i].to) {
@@ -194,6 +197,21 @@ export default {
 
         if (that.account && that.transactions) {
           that.loading = false;
+        }
+      });
+    },
+    getCurrencySymbol(account) {
+      var that = this;
+      axios
+      .get(
+        `${process.env.apiURL}/currencies`
+      )
+      .then(function(response) {
+        for (let el of response.data) {
+          if(account.currency_id==el.id){
+            that.currency_symbol = el.symbol+' '
+            break
+          }
         }
       });
     }
