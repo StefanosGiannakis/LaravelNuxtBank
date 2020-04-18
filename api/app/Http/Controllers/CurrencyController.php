@@ -72,6 +72,6 @@ class CurrencyController extends Controller
         
         $recieverAmountToUSD = $transaction['amount'] * $recieverCurrencyUSDrate;
 
-        $transaction['amount'] = $recieverAmountToUSD / $senderCurrencyUSDrate;
+        $transaction['amount'] = round($recieverAmountToUSD / $senderCurrencyUSDrate, 2);
     }
 }
