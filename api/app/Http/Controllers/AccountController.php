@@ -27,6 +27,17 @@ class AccountController extends Controller
         if(!count($transactions))
             return response()->json(['error'=>'Account Not Found'], 404);
 
+        $transactions = json_decode(json_encode($transactions->values()), true);
+        
+        // Convert Transactions Amounts to 'caller account' currency id
+        $currencyConverter = new CurrencyController();
+
+        foreach($transactions as &$transaction){
+            if($transaction['from'] == $id){
+                $currencyConverter->translateCurrencyToSender($transaction);
+            }
+        } 
+
         return response()->json($transactions, 200);
     }
 

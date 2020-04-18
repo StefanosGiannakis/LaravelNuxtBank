@@ -14,16 +14,16 @@ class CurrencyController extends Controller
         return $currencies->all();
     }
 
-    public function translateSenderCurrencyToReciever($validData)
+    public function translateSenderCurrencyToReciever($validData )
     {
         $account = new Account();
-        // find sender currency 
+        // find sender  
         $senderAccount = $account->find($validData['from']);
 
-        // find reciever currency
+        // find reciever 
         $recieverAccount = $account->find($validData['to']);
         
-        // if is currencies code are same return 
+        // if currencies code are same return 
         if($recieverAccount['currency_id'] == $senderAccount['currency_id'])
             return $validData['amount'];
  
@@ -48,5 +48,30 @@ class CurrencyController extends Controller
             if($currency['id']==$currency_id)
                 return $currency['usd_exchange_rate'];
         }
+    }
+
+    public function translateCurrencyToSender(&$transaction)
+    {
+        $account = new Account();
+        // find sender  
+        $senderAccount = $account->find($transaction['from']);
+
+        // find reciever 
+        $recieverAccount = $account->find($transaction['to']);
+        
+        // if currencies code are same return 
+        if($recieverAccount['currency_id'] == $senderAccount['currency_id'])
+            return $transaction['amount'];
+ 
+        // convert and return the translated amount
+        $currencies = $this->getCurrencyList();
+        $currencies = json_decode(json_encode($currencies->values()), true);
+   
+        $senderCurrencyUSDrate = $this->getExchangeRate($currencies,$senderAccount['currency_id']);
+        $recieverCurrencyUSDrate = $this->getExchangeRate($currencies,$recieverAccount['currency_id']);
+        
+        $recieverAmountToUSD = $transaction['amount'] * $recieverCurrencyUSDrate;
+
+        $transaction['amount'] = $recieverAmountToUSD / $senderCurrencyUSDrate;
     }
 }
