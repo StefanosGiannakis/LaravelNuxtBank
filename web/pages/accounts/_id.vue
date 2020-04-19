@@ -44,7 +44,7 @@
           </b-form-group>
 
           <b-form-group id="input-group-2" label="Amount:" label-for="input-2">
-            <b-input-group prepend="$" size="sm">
+            <b-input-group v-bind:prepend=currency_symbol size="sm">
               <b-form-input
                 id="input-2"
                 v-model="payment.amount"
@@ -68,7 +68,12 @@
           <b-button type="submit" size="sm" variant="primary">Submit</b-button>
         </b-form>
       </b-card>
-
+      <div class="alert alert-danger mt-3" role="alert"  v-if="error">
+        {{ error_message }}
+      </div>
+      <div class="alert alert-success mt-3" role="success"  v-if="success">
+        {{ success_message }}
+      </div>
       <b-card class="mt-3" header="Payment History">
         <b-table striped hover :items="transactions"></b-table>
       </b-card>
@@ -90,10 +95,28 @@ export default {
       transactions: null,
 
       loading: true,
-      currency_symbol: 'd'
+      currency_symbol: '',
+      
+      error: false,
+      error_message:'We had an error ',
+
+      success: false,
+      success_message:'Transaction was successful '
     };
   },
-
+  watch: {
+    error_message: function (val) {
+      setTimeout(() => {
+        this.error = false
+        this.error_message = ''
+      },4000)
+    },
+    success: function (val) {
+      setTimeout(() => {
+        this.success = false
+      },4000)
+    }
+  },
   mounted() {
     const that = this;
 
@@ -127,7 +150,22 @@ export default {
         }/transactions`,
 
         this.payment
-      );
+      ).then( () => {
+        that.success = true
+      }).catch( (error) => {
+        
+        if (typeof error.response.data.error !== 'undefined') 
+          var message= error.response.data.error
+
+        if (typeof error.response.data.details !== 'undefined') 
+          var message= error.response.data.details[0]
+        
+        if (typeof error.response.data.to !== 'undefined') 
+          var message= error.response.data.to[0]
+
+        that.error = true
+        that.error_message = message
+      });
 
       that.payment = {};
       that.show = false;
@@ -168,7 +206,7 @@ export default {
 
             that.transactions = transactions;
           });
-      }, 200);
+      }, 400);
     },
     getTransactions(that) {
           axios
@@ -182,9 +220,6 @@ export default {
 
         var transactions = [];
         for (let i = 0; i < that.transactions.length; i++) {
-          that.transactions[i].amount =
-            
-            that.transactions[i].amount;
 
           if (that.account.id != that.transactions[i].to) {
             that.transactions[i].amount = "-" + that.transactions[i].amount;

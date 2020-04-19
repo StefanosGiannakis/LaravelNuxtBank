@@ -67,15 +67,16 @@ class CurrencyController extends Controller
         $recieverAccount = $account->find($transaction['to']);
         
         // if currencies code are same return 
+        $currency = $this->getCurrencyInfo($senderAccount['currency_id'])['symbol'];
+
         if($recieverAccount['currency_id'] == $senderAccount['currency_id'])
-            return $transaction['amount'];
-   
+            return $transaction['amount'] .=" $currency";
+        
         $senderCurrencyUSDrate = $this->getCurrencyInfo($senderAccount['currency_id'])['usd_exchange_rate'];
         $recieverCurrencyUSDrate = $this->getCurrencyInfo($recieverAccount['currency_id'])['usd_exchange_rate'];
         
         $recieverAmountToUSD = $transaction['amount'] * $recieverCurrencyUSDrate;
 
-        $currency = $this->getCurrencyInfo($senderAccount['currency_id'])['symbol'];
         $transaction['amount'] = round($recieverAmountToUSD / $senderCurrencyUSDrate, 2) ." $currency";
     }
 }
