@@ -21,7 +21,7 @@ class AccountController extends Controller
         $id = $validator->validated()['id'];
 
         $transactions = \DB::table('transactions')
-                        ->whereRaw("`from`=$id OR `to`=$id")
+                        ->whereRaw("`from`=? OR `to`=?",[$id,$id])
                         ->get();
 
         if(!count($transactions))
@@ -58,7 +58,7 @@ class AccountController extends Controller
         
         $id = $validator->validated()['id'];
         $account = \DB::table('accounts')
-                    ->whereRaw("id=$id")
+                    ->whereRaw("id=?",$id)
                     ->get();
                     
         if(!count($account))
@@ -69,7 +69,7 @@ class AccountController extends Controller
 
         $currency = \DB::table('currencies')
                         ->select('code')
-                        ->whereRaw("id=$currency_id")
+                        ->whereRaw("id= ?",$currency_id)
                         ->get();
 
 
@@ -105,7 +105,7 @@ class AccountController extends Controller
 
         $getBalance = \DB::table('accounts')
                         ->select('balance')
-                        ->whereRaw("id=$id")
+                        ->whereRaw("id=?",$id)
                         ->get('balance');
 
         $availableBalance = $getBalance->all()[0]->balance;
@@ -114,7 +114,7 @@ class AccountController extends Controller
 
 
         $account = \DB::table('accounts')
-                    ->whereRaw("id=$id")
+                    ->whereRaw("id=?",$id)
                     ->update(['balance' => \DB::raw('balance-' . $amount)]);
 
 
@@ -123,7 +123,7 @@ class AccountController extends Controller
         $amount = $currencyTranslator->translateSenderCurrencyToReciever($validData);
 
         $account = \DB::table('accounts')
-                    ->whereRaw("id=$to")
+                    ->whereRaw("id=?",$to)
                     ->update(['balance' => \DB::raw('balance+' . $amount)]);
 
         $result = \DB::table('transactions')->insert(
