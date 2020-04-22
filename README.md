@@ -24,6 +24,7 @@ Feature Testing on API endpoints
 - Every transaction has converted amount to **receiver's currency**
 - GET transactions currency return amounts converted to the account id. For example :
 > api/accounts/1/transactions	// Will get response with $ converted amounts
+>
 > api/accounts/2/transactions	// Will get response with € or £
 - I have include three currencies - with hardcoded values. Maybe in the future a worker and a external api will help with the exchange rates
 	- Currency symbols in api responses, at the Frond-end (history and create transaction)
